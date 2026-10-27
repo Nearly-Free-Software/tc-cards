@@ -318,9 +318,10 @@ a { color: inherit; text-underline-offset: 0.15em; }
   height: 100dvh;
   min-height: 0;
 }
-/* Only while a card is moving: let it sweep past the card area, never scroll the page, ignore taps. */
-.card-screen.moving { overflow: hidden; overflow: clip; }
-.card-screen.moving .card-area { overflow: visible; }
+/* Only while a card is moving or being twisted: let it sweep past the card area, never scroll the
+   page. A moving card ignores taps; a twisted one is under two fingers. */
+.card-screen.moving, .card-screen.twisting { overflow: hidden; overflow: clip; }
+.card-screen.moving .card-area, .card-screen.twisting .card-area { overflow: visible; }
 .card-screen.moving .card { pointer-events: none; }
 
 /* The deck is centred with auto margins rather than align-items: center, so a question
@@ -340,7 +341,7 @@ a { color: inherit; text-underline-offset: 0.15em; }
 
 .deck { position: relative; width: min(100%, 24rem); margin-block: auto; padding-bottom: 14px; }
 
-/* #card is the live region and focus target; Turn spins it flat on the table, always clockwise. */
+/* #card is the live region and focus target; Turn spins it flat on the table, clockwise; two fingers can twist it round either way. */
 .card {
   position: relative;
   border-radius: 16px;
@@ -349,10 +350,22 @@ a { color: inherit; text-underline-offset: 0.15em; }
 }
 .card:focus { outline: none; }
 .card.still { transition: none; }
+/* Two fingers are turning it: the inline transform follows them, then a release animation lands it. */
+.card.twist { transition: none; will-change: transform; }
+/* Sideways strokes on the card are ours (slide to set it aside); vertical ones and pinches stay the browser's,
+   except two fingertips turning it, which swipe.js claims by script. */
+.card { touch-action: pan-y; touch-action: pan-y pinch-zoom; }
+.zoomed .card { touch-action: auto; }
+/* While a finger holds the top card, the next one waits face down beneath it (bare table under the last). */
+.card.lifted .sheet { transform: rotateY(180deg); }
+.card.lifted .face { opacity: 0; }
+.card.lifted .back { opacity: 1; }
+.deck[data-depth="0"] .card.lifted .sheet, .card.lifted.bare .sheet { opacity: 0; }
 
 /* The physical card. Everything visual lives here so a clone (ghost) looks identical. */
 .sheet {
   position: relative;
+  -webkit-touch-callout: none; /* no callout under a resting thumb; text can still be selected to hear or translate it */
   min-height: min(22rem, 52dvh);
   min-height: min(calc(100cqh - 14px), calc(min(100cqw, 24rem) * 1.4)); /* a 5:7 card when there's room */
   display: flex;
@@ -412,6 +425,8 @@ a { color: inherit; text-underline-offset: 0.15em; }
 /* Cards that leave the table fly in this layer, above the card area (z 1) but below the toast. */
 .flight { position: absolute; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; pointer-events: none; }
 .sheet.ghost { position: absolute; margin: 0; min-height: 0; z-index: 2; }
+.sheet.ghost.held { will-change: transform; }
+.flight .band { position: absolute; left: 0; width: 100%; overflow: hidden; z-index: 2; will-change: transform; }
 
 .toast {
   position: fixed;

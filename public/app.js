@@ -1,6 +1,7 @@
 import { decryptJSON, fromB64, toB64, unlock } from './lock.js';
 import * as motion from './motion.js';
 import * as pile from './pile.js';
+import * as swipe from './swipe.js';
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -9,6 +10,7 @@ const STATE_KEY = 'tc:v1';
 const KEY_KEY = 'tc:key';
 const TIP_KEY = 'tc:tip';
 const TAP_GUARD_MS = 900;
+const TURN_QUIET_MS = 1500; // after a Turn the phone is often changing hands: no slides for a moment
 const THEME_COLORS = { dark: '#17120e', light: '#e7ddcc' };
 console.assert(motion.MOTION_MAX < TAP_GUARD_MS, 'card motions must finish inside the tap guard');
 
@@ -36,7 +38,8 @@ let state = { theme: 'dark', haptics: true, piles: {} };
 let deckId = null;       // pile currently open
 let guardUntil = 0;
 let guardTimer = 0;
-let turns = 0;           // Turn presses on the open card; odd = facing the far side
+let turns = 0;           // half-turns of the open card, + clockwise; odd = facing the far side
+let turnedAt = -Infinity;
 let updateReady = false;
 
 const persist = () => save(STATE_KEY, state);
@@ -301,13 +304,13 @@ function guarded(fn) {
 // The start of the question: the top, or the bottom when the card is turned round.
 function scrollToStart() {
   const area = $('#card-area');
-  area.scrollTop = turns % 2 ? area.scrollHeight : 0;
+  area.scrollTop = turns & 1 ? area.scrollHeight : 0;
 }
 
 function setTurns(n) {
   turns = n;
   $('#card').style.setProperty('--turns', n);
-  $('#turn').setAttribute('aria-pressed', String(n % 2 === 1));
+  $('#turn').setAttribute('aria-pressed', String((n & 1) === 1));
 }
 
 // Each draw: check it's allowed, capture the outgoing card, change state, render, then
@@ -347,10 +350,14 @@ $('#back').addEventListener('click', goBack);
 $('#empty-back').addEventListener('click', goBack);
 $('#skip').addEventListener('click', notThisOne);
 
-$('#turn').addEventListener('click', () => motion.spin(() => {
-  setTurns(turns + 1);
+// Turn n half-turns: state only; motion.spin() or a twist dresses it.
+function turnBy(n) {
+  turnedAt = performance.now();
+  setTurns(turns + n);
   scrollToStart();
-}));
+}
+
+$('#turn').addEventListener('click', () => motion.spin(() => turnBy(1)));
 
 $('#shuffle-again').addEventListener('click', guarded(() => {
   setPile(deckId, pile.begin(pile.newPile(deckIds(deckId))));
@@ -360,6 +367,15 @@ $('#shuffle-again').addEventListener('click', guarded(() => {
 }));
 
 for (const btn of $$('[data-close]')) btn.addEventListener('click', goLid);
+
+// Sliding the card toward the reader's left does what Next does; twisting it round with two
+// fingers does what Turn does.
+swipe.attach($('#card'), motion, {
+  ready: () => screen === 'card' && performance.now() >= guardUntil && performance.now() - turnedAt >= TURN_QUIET_MS,
+  key: () => `${deckId}:${state.piles[deckId]?.pos}:${turns}`,
+  commit: goNext,
+  turn: turnBy,
+});
 
 document.addEventListener('keydown', (e) => {
   // Leave browser shortcuts (Alt/Cmd+← is Back) and typing in the table-word field alone.
