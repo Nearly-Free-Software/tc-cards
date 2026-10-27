@@ -2,7 +2,7 @@
 // a new deploy ships a new VERSION, which installs alongside, takes over and deletes the old cache.
 // The two lines below are rewritten by `npm run stamp`; don't edit them by hand.
 // <stamp>
-const VERSION = 'linger-c5a2239b0a';
+const VERSION = 'linger-af333cfb7d';
 const FILES = ["./","app.css","app.js","cards.enc.json","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","icons/icon.svg","icons/maskable-512.png","index.html","lock.js","manifest.webmanifest","pile.js"];
 // </stamp>
 

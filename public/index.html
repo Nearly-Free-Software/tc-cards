@@ -39,7 +39,7 @@
 
     <section id="screen-lid" class="screen" hidden>
       <header class="lid-head">
-        <h1 class="wordmark">Linger</h1>
+        <h1 class="wordmark" id="lid-heading" tabindex="-1">Linger</h1>
         <p class="muted">An unofficial companion for the table</p>
       </header>
       <div class="piles">
@@ -71,7 +71,7 @@
       </header>
       <div class="intro">
         <p class="eyebrow" id="intro-tier"></p>
-        <h2 id="intro-subtitle" class="intro-subtitle"></h2>
+        <h2 id="intro-subtitle" class="intro-subtitle" tabindex="-1"></h2>
         <p id="intro-text" class="intro-text"></p>
         <p id="intro-tip" class="intro-tip"></p>
         <p class="fine">From Table Conversations by Practicing the Way.</p>
@@ -88,7 +88,7 @@
         <span id="count" class="count"></span>
       </header>
       <div id="card-area" class="card-area">
-        <article id="card" class="card" aria-live="polite" aria-atomic="true">
+        <article id="card" class="card" tabindex="-1" aria-live="polite" aria-atomic="true">
           <p id="card-label" class="card-label"></p>
           <div id="card-text" class="card-text"></div>
           <p id="card-hint" class="card-hint" hidden></p>
@@ -111,7 +111,7 @@
       </header>
       <div class="intro center">
         <p class="eyebrow" id="empty-tier"></p>
-        <h2 class="intro-subtitle">You’ve drawn every card</h2>
+        <h2 id="empty-heading" class="intro-subtitle" tabindex="-1">You’ve drawn every card</h2>
       </div>
       <div class="controls">
         <button type="button" id="shuffle-again" class="btn primary big">Shuffle the deck</button>
@@ -123,7 +123,7 @@
         <button type="button" class="icon-btn" data-close aria-label="Back to the box">✕</button>
       </header>
       <div class="about">
-        <h2>About Linger</h2>
+        <h2 id="about-heading" tabindex="-1">About Linger</h2>
         <p>Linger is a small, free, unofficial way to carry the <strong>Table Conversations</strong> questions for evenings when the box isn’t with you. The questions are by <strong>Practicing the Way</strong>, shown word for word. Linger is not affiliated with or endorsed by Practicing the Way.</p>
         <ul class="links">
           <li><a href="https://www.practicingtheway.org/tableconversations" target="_blank" rel="noopener noreferrer">Table Conversations</a>: the box, restock news and hosting tips</li>
@@ -150,7 +150,7 @@
 
   </main>
 
-  <dialog id="confirm" class="confirm">
+  <dialog id="confirm" class="confirm" aria-labelledby="confirm-text">
     <form method="dialog">
       <p id="confirm-text"></p>
       <div class="confirm-actions">

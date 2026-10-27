@@ -37,6 +37,8 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   background: var(--bg);
+  /* Only the root element controls the viewport: no pull-to-refresh while passing the phone. */
+  overscroll-behavior: none;
 }
 
 /* iOS only (touch-callout is iOS-only): follow the Larger Text setting, even in the installed app. */
@@ -52,7 +54,6 @@ body {
   color: var(--fg);
   line-height: 1.45;
   -webkit-tap-highlight-color: transparent;
-  overscroll-behavior: none;
 }
 
 /* Light theme in the installed iPhone app: the status bar text is white, so give it a dark band. */
@@ -148,7 +149,7 @@ a { color: inherit; text-underline-offset: 0.15em; }
   min-height: 52px;
   padding: 0.6rem 0.9rem;
   border-radius: 12px;
-  border: 1px solid var(--btn-line);
+  border: 1.5px solid var(--muted); /* at least 3:1 against the page in both themes */
   background: var(--surface);
   font-size: 1.15rem;
 }
@@ -216,20 +217,25 @@ a { color: inherit; text-underline-offset: 0.15em; }
   min-height: 0;
 }
 
+/* The card is centred with auto margins rather than align-items: center, so a question
+   taller than the area (very large text sizes) scrolls from its top instead of being cut off. */
 .card-area {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0.5rem clamp(0.25rem, 4vw, 2rem);
 }
 
 .card {
   width: 100%;
+  margin-block: auto;
   text-align: center;
   transition: transform 220ms ease;
 }
+.card:focus { outline: none; }
 .card.enter { animation: fade 180ms ease-out; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 .card-area.turned .card { transform: rotate(180deg); }
@@ -244,6 +250,8 @@ a { color: inherit; text-underline-offset: 0.15em; }
   max-width: 14em;
   margin: 0 auto;
   text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 .card-text p + p { margin-top: 0.8em; }
 

@@ -42,13 +42,17 @@ function setPile(id, p) {
 // ---------------------------------------------------------------- screens & history
 
 const SCREENS = ['loading', 'unlock', 'lid', 'intro', 'card', 'empty', 'about'];
+// Where focus lands on each screen, so keyboard and VoiceOver users aren't left on a
+// button that just disappeared. Focusing the card makes VoiceOver read the first question.
+const FOCUS = { unlock: '#word', lid: '#lid-heading', intro: '#intro-subtitle', card: '#card', empty: '#empty-heading', about: '#about-heading' };
 let screen = 'loading';
 
-function show(name) {
+function show(name, focus = FOCUS[name]) {
   screen = name;
   for (const s of SCREENS) $(`#screen-${s}`).hidden = s !== name;
   if (name === 'card') keepAwake(); else if (name !== 'empty') letSleep();
   window.scrollTo(0, 0);
+  if (focus) $(focus)?.focus({ preventScroll: true });
 }
 
 // One history entry for anything opened from the lid, so Android's back button returns to the lid.
@@ -99,10 +103,19 @@ function letSleep() {
   wake = null;
 }
 
+let lastUpdateCheck = 0;
+
 document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  // An installed app is usually resumed rather than relaunched, so look for a new version
+  // (a fix, a changed table word, or a takedown) at most once a minute.
+  if ('serviceWorker' in navigator && Date.now() - lastUpdateCheck > 60000) {
+    lastUpdateCheck = Date.now();
+    navigator.serviceWorker.getRegistration().then((r) => r?.update()).catch(() => {});
+  }
   // Re-request after the phone was locked or the app backgrounded. If this fails outside
   // a tap, the next tap on Next tries again.
-  if (document.visibilityState === 'visible' && wantWake && !wake && 'wakeLock' in navigator) {
+  if (wantWake && !wake && 'wakeLock' in navigator) {
     navigator.wakeLock.request('screen').then((s) => {
       wake = s;
       s.addEventListener('release', () => { wake = null; });
@@ -139,8 +152,10 @@ function showLid() {
     const n = pile.left(p);
     $(`[data-left="${id}"]`).textContent = n === 0 ? 'All drawn' : `${n} of ${pile.size(p)} left`;
     $(`[data-title="${id}"]`).textContent = decks[id].title;
+    $(`[data-reshuffle="${id}"]`).setAttribute('aria-label', `Reshuffle ${decks[id].title}`);
   }
-  show('lid');
+  // Coming back from a pile, return focus to that pile's button.
+  show('lid', deckId ? `[data-open="${deckId}"]` : undefined);
 }
 
 for (const btn of $$('[data-open]')) {
@@ -213,6 +228,8 @@ function renderText(container, text) {
 
 function showCurrent() {
   const p = state.piles[deckId];
+  // Applies to the empty screen too: its Shuffle button sits right where Next was.
+  guardUntil = performance.now() + TAP_GUARD_MS;
   if (pile.isEmpty(p)) {
     $('#empty-tier').textContent = decks[deckId].title;
     if (history.state?.linger) history.replaceState({ linger: 'empty' }, '');
@@ -225,15 +242,16 @@ function showCurrent() {
   $('#card-hint').textContent = card.hint ?? '';
   $('#card-hint').hidden = !card.hint;
   $('#count').textContent = `${pile.drawn(p)} / ${pile.size(p)}`;
+  const focused = document.activeElement;
   $('#back').disabled = !pile.canGoBack(p);
   $('#skip').disabled = !pile.canSkip(p);
+  if (focused?.disabled) $('#next').focus({ preventScroll: true });
 
   const el = $('#card');
   el.classList.remove('enter');
   void el.offsetWidth; // restart the fade
   el.classList.add('enter');
   $('#card-area').scrollTop = 0;
-  guardUntil = performance.now() + TAP_GUARD_MS;
 
   if (screen !== 'card') {
     if (history.state?.linger) history.replaceState({ linger: 'card' }, '');
@@ -280,15 +298,16 @@ $('#turn').addEventListener('click', () => {
   $('#turn').setAttribute('aria-pressed', String(turned));
 });
 
-$('#shuffle-again').addEventListener('click', () => {
+$('#shuffle-again').addEventListener('click', guarded(() => {
   setPile(deckId, pile.begin(pile.newPile(deckIds(deckId))));
   showCurrent();
-});
+}));
 
 for (const btn of $$('[data-close]')) btn.addEventListener('click', goLid);
 
 document.addEventListener('keydown', (e) => {
-  if (e.target instanceof HTMLInputElement || $('#confirm').open) return;
+  // Leave browser shortcuts (Alt/Cmd+← is Back) and typing in the table-word field alone.
+  if (e.altKey || e.metaKey || e.ctrlKey || e.target.id === 'word' || $('#confirm').open) return;
   if (screen === 'card' && e.key === 'ArrowRight') goNext();
   else if ((screen === 'card' || screen === 'empty') && e.key === 'ArrowLeft') goBack();
   else if (['intro', 'card', 'empty', 'about'].includes(screen) && e.key === 'Escape') goLid();
