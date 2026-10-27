@@ -1,4 +1,4 @@
-// Clear everything Linger kept on this phone, and drop any service worker still registered.
+// Clear everything TC Cards kept on this phone, and drop any service worker still registered.
 try {
   for (const key of Object.keys(localStorage)) if (key.startsWith('tc:')) localStorage.removeItem(key);
 } catch { /* storage unavailable */ }

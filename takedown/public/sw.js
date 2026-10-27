@@ -1,4 +1,4 @@
-// Tombstone service worker: replaces Linger on phones that installed it. It deletes the
+// Tombstone service worker: replaces TC Cards on phones that installed it. It deletes the
 // offline cache, unregisters itself and reloads open windows so they fetch the retired page.
 self.addEventListener('install', () => self.skipWaiting());
 

@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "linger",
+      "name": "tc-cards",
       "runtimeExecutable": "node",
       "runtimeArgs": ["scripts/serve.mjs"],
       "port": 5173

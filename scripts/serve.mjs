@@ -41,4 +41,4 @@ createServer(async (req, res) => {
   } catch {
     res.writeHead(404, { 'Content-Type': 'text/plain' }).end('Not found');
   }
-}).listen(PORT, 'localhost', () => console.log(`Linger dev server: http://localhost:${PORT}`));
+}).listen(PORT, 'localhost', () => console.log(`TC Cards dev server: http://localhost:${PORT}`));

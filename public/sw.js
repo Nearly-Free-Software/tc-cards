@@ -1,8 +1,8 @@
-// Offline cache for Linger. Everything is pre-cached at install and served cache-first;
+// Offline cache for TC Cards. Everything is pre-cached at install and served cache-first;
 // a new deploy ships a new VERSION, which installs alongside, takes over and deletes the old cache.
 // The two lines below are rewritten by `npm run stamp`; don't edit them by hand.
 // <stamp>
-const VERSION = 'linger-af333cfb7d';
+const VERSION = 'tc-cards-5e4b348f6a';
 const FILES = ["./","app.css","app.js","cards.enc.json","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","icons/icon.svg","icons/maskable-512.png","index.html","lock.js","manifest.webmanifest","pile.js"];
 // </stamp>
 
@@ -17,7 +17,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('linger-') && k !== VERSION).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('tc-cards-') && k !== VERSION).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });

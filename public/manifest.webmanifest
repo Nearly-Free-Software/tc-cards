@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Linger",
-  "short_name": "Linger",
+  "name": "TC Cards",
+  "short_name": "TC Cards",
   "description": "An unofficial pocket companion for conversations around the table.",
   "start_url": "./",
   "scope": "./",

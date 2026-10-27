@@ -57,13 +57,13 @@ function show(name, focus = FOCUS[name]) {
 
 // One history entry for anything opened from the lid, so Android's back button returns to the lid.
 function openFromLid(name) {
-  if (history.state?.linger) history.replaceState({ linger: name }, '');
-  else history.pushState({ linger: name }, '');
+  if (history.state?.tc) history.replaceState({ tc: name }, '');
+  else history.pushState({ tc: name }, '');
   show(name);
 }
 
 function goLid() {
-  if (history.state?.linger) history.back(); // popstate shows the lid
+  if (history.state?.tc) history.back(); // popstate shows the lid
   else showLid();
 }
 
@@ -232,7 +232,7 @@ function showCurrent() {
   guardUntil = performance.now() + TAP_GUARD_MS;
   if (pile.isEmpty(p)) {
     $('#empty-tier').textContent = decks[deckId].title;
-    if (history.state?.linger) history.replaceState({ linger: 'empty' }, '');
+    if (history.state?.tc) history.replaceState({ tc: 'empty' }, '');
     show('empty');
     return;
   }
@@ -254,7 +254,7 @@ function showCurrent() {
   $('#card-area').scrollTop = 0;
 
   if (screen !== 'card') {
-    if (history.state?.linger) history.replaceState({ linger: 'card' }, '');
+    if (history.state?.tc) history.replaceState({ tc: 'card' }, '');
     show('card');
   }
 }
@@ -381,7 +381,7 @@ async function boot() {
     if (!res.ok) throw new Error(String(res.status));
     envelope = await res.json();
   } catch {
-    $('#loading-msg').textContent = 'Couldn’t open the box. Connect to the internet once, then reopen Linger.';
+    $('#loading-msg').textContent = 'Couldn’t open the box. Connect to the internet once, then reopen TC Cards.';
     return;
   }
   const key = load(KEY_KEY);

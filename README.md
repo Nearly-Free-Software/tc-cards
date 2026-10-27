@@ -1,8 +1,8 @@
-# Linger
+# TC Cards
 
 A small, offline phone web app for playing the **Table Conversations** question cards when the box isn't with you. You choose a pile (Start Small or Go Deeper), read its intro, and draw one card at a time. Cards don't repeat across evenings, and the screen stays out of the way.
 
-Linger is an unofficial companion. Table Conversations and its questions are © [Practicing the Way](https://www.practicingtheway.org/tableconversations), and Linger is not affiliated with or endorsed by them.
+TC Cards is an unofficial companion. Table Conversations and its questions are © [Practicing the Way](https://www.practicingtheway.org/tableconversations), and TC Cards is not affiliated with or endorsed by them.
 
 **This repository contains no Practicing the Way content.** There are no questions, PDFs or encrypted deck here. Each person builds the deck on their own machine from PtW's [free PDF](https://www.practicingtheway.org/tableconversations#download), and it is only ever served encrypted behind a spoken *table word*. Please respect [PtW's terms](https://www.practicingtheway.org/terms): personal and non-commercial use only, and ask them (hello@practicingtheway.org) before sharing a deployment beyond your own phone.
 

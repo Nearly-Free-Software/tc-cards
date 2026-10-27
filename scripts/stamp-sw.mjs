@@ -25,7 +25,7 @@ const files = walk(PUBLIC)
 
 const hash = createHash('sha256');
 for (const f of files) hash.update(f).update('\0').update(readFileSync(join(PUBLIC, f))).update('\0');
-const version = `linger-${hash.digest('hex').slice(0, 10)}`;
+const version = `tc-cards-${hash.digest('hex').slice(0, 10)}`;
 
 const block = `// <stamp>\nconst VERSION = '${version}';\nconst FILES = ${JSON.stringify(['./', ...files])};\n// </stamp>`;
 const sw = readFileSync(SW, 'utf8');
