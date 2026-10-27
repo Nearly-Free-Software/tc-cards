@@ -13,6 +13,7 @@ TC Cards is an unofficial companion. Table Conversations and its questions are Â
 - **`public/sw.js`** pre-caches every file, so after one online visit the app works with no signal.
 - **Pile state** (shuffled order and position) is kept in `localStorage`. Nothing leaves the phone, and there are no analytics or cookies.
 - **Screen wake lock** keeps the screen on while a card is showing, where the browser supports it.
+- **Cards feel physical**: each question is printed on a card lying on a candlelit table, drawn from a pile that visibly thins. Drawing sets the old card aside and turns the next one over; *Not this one* tucks it under the pile; *Turn* spins it flat for the person opposite. `public/motion.js` holds the motions (Web Animations, transform/opacity only); they all finish inside the 600 ms tap guard, never gate state, and fall back to a short fade with Reduce Motion or for cards too tall to animate. On Android a 10 ms tick confirms each draw (toggle in About); iPhones have no web vibration API.
 
 ## Setup
 
@@ -78,7 +79,7 @@ If you ever need to withdraw a deployment, follow [`takedown/README.md`](takedow
 
 ```
 public/          everything that is served (index.html, app.js, pile.js, lock.js, sw.js, â€¦)
-scripts/         build-cards, stamp-sw, make-icons, serve (all dependency-free Node)
+scripts/         build-cards, stamp-sw, make-icons, make-paper, serve (all dependency-free Node)
 tests/           node:test suites
 takedown/        tombstone files for withdrawing a deployment
 local/           your PDFs, plaintext deck, overrides and table word (git-ignored)

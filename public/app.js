@@ -1,4 +1,5 @@
 import { decryptJSON, fromB64, toB64, unlock } from './lock.js';
+import * as motion from './motion.js';
 import * as pile from './pile.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -8,7 +9,11 @@ const STATE_KEY = 'tc:v1';
 const KEY_KEY = 'tc:key';
 const TIP_KEY = 'tc:tip';
 const TAP_GUARD_MS = 600;
-const THEME_COLORS = { dark: '#17120e', light: '#f5efe4' };
+const THEME_COLORS = { dark: '#17120e', light: '#e7ddcc' };
+console.assert(motion.MOTION_MAX < TAP_GUARD_MS, 'card motions must finish inside the tap guard');
+
+// iOS only applies :active (the button press) when the page listens for touches.
+document.addEventListener('touchstart', () => {}, { passive: true });
 
 // ---------------------------------------------------------------- storage (never throws)
 
@@ -27,9 +32,11 @@ function forget(key) {
 let envelope = null;
 let decks = {};          // id -> { id, title, subtitle, intro, tip, cards }
 let cardsById = {};      // card id -> card
-let state = { theme: 'dark', piles: {} };
+let state = { theme: 'dark', haptics: true, piles: {} };
 let deckId = null;       // pile currently open
 let guardUntil = 0;
+let guardTimer = 0;
+let turns = 0;           // Turn presses on the open card; odd = facing the far side
 let updateReady = false;
 
 const persist = () => save(STATE_KEY, state);
@@ -106,7 +113,7 @@ function letSleep() {
 let lastUpdateCheck = 0;
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState !== 'visible') return;
+  if (document.visibilityState !== 'visible') return motion.settle();
   // An installed app is usually resumed rather than relaunched, so look for a new version
   // (a fix, a changed table word, or a takedown) at most once a minute.
   if ('serviceWorker' in navigator && Date.now() - lastUpdateCheck > 60000) {
@@ -122,6 +129,15 @@ document.addEventListener('visibilitychange', () => {
     }).catch(() => {});
   }
 });
+
+window.addEventListener('pagehide', () => motion.settle());
+
+// ---------------------------------------------------------------- haptics (Android only; iOS has no Vibration API)
+
+const canTick = typeof navigator.vibrate === 'function' && matchMedia('(pointer: coarse)').matches;
+function tick() {
+  if (canTick && state.haptics) try { navigator.vibrate(10); } catch { /* best effort */ }
+}
 
 let toastTimer = 0;
 function toast(text) {
@@ -145,11 +161,19 @@ function deckIds(id) {
   return decks[id].cards.map((c) => c.id);
 }
 
+// How many pile edges to draw: coarse steps, so the pile visibly thins without anyone counting.
+function depthOf(p) {
+  const n = pile.left(p);
+  return n === 0 ? 0 : Math.ceil((4 * n) / pile.size(p));
+}
+
 function showLid() {
+  motion.settle();
   if (updateReady) return location.reload();
   for (const id of Object.keys(decks)) {
     const p = state.piles[id];
     const n = pile.left(p);
+    $(`[data-open="${id}"]`).dataset.depth = depthOf(p);
     $(`[data-left="${id}"]`).textContent = n === 0 ? 'All drawn' : `${n} of ${pile.size(p)} left`;
     $(`[data-title="${id}"]`).textContent = decks[id].title;
     $(`[data-reshuffle="${id}"]`).setAttribute('aria-label', `Reshuffle ${decks[id].title}`);
@@ -166,8 +190,12 @@ for (const btn of $$('[data-reshuffle]')) {
   btn.addEventListener('click', async () => {
     const id = btn.dataset.reshuffle;
     if (await confirmReshuffle(id)) {
+      const pileBtn = $(`[data-open="${id}"]`);
+      const from = Number(pileBtn.dataset.depth);
       setPile(id, pile.newPile(deckIds(id)));
       showLid();
+      motion.squareUp(pileBtn, from);
+      tick();
     }
   });
 }
@@ -198,10 +226,10 @@ function openIntro(id) {
 }
 
 $('#begin').addEventListener('click', () => {
+  setTurns(0); // the card screen is hidden here, so this doesn't spin
   setPile(deckId, pile.begin(state.piles[deckId]));
-  $('#card-area').classList.remove('turned');
-  $('#turn').setAttribute('aria-pressed', 'false');
   showCurrent();
+  if (screen === 'card') motion.play('deal');
 });
 
 // ---------------------------------------------------------------- card
@@ -247,11 +275,13 @@ function showCurrent() {
   $('#skip').disabled = !pile.canSkip(p);
   if (focused?.disabled) $('#next').focus({ preventScroll: true });
 
-  const el = $('#card');
-  el.classList.remove('enter');
-  void el.offsetWidth; // restart the fade
-  el.classList.add('enter');
-  $('#card-area').scrollTop = 0;
+  $('#deck').dataset.tier = deckId;
+  $('#deck').dataset.depth = depthOf(p);
+  scrollToStart();
+  // While the guard is up, guarded buttons show no press (see app.css).
+  $('#app').dataset.guard = '';
+  clearTimeout(guardTimer);
+  guardTimer = setTimeout(() => { delete $('#app').dataset.guard; }, TAP_GUARD_MS);
 
   if (screen !== 'card') {
     if (history.state?.tc) history.replaceState({ tc: 'card' }, '');
@@ -268,24 +298,48 @@ function guarded(fn) {
   };
 }
 
+// The start of the question: the top, or the bottom when the card is turned round.
+function scrollToStart() {
+  const area = $('#card-area');
+  area.scrollTop = turns % 2 ? area.scrollHeight : 0;
+}
+
+function setTurns(n) {
+  turns = n;
+  $('#card').style.setProperty('--turns', n);
+  $('#turn').setAttribute('aria-pressed', String(n % 2 === 1));
+}
+
+// Each draw: check it's allowed, capture the outgoing card, change state, render, then
+// dress the change with motion and a tick. Motion never gates state.
 const goNext = guarded(() => {
-  keepAwake();
+  keepAwake(); // first, while the tap still counts as a user gesture
+  const ghost = motion.capture();
   setPile(deckId, pile.next(state.piles[deckId]));
   showCurrent();
+  motion.play(screen === 'empty' ? 'last' : 'next', ghost);
+  tick();
 });
 
 const goBack = guarded(() => {
   const p = state.piles[deckId];
   if (!pile.canGoBack(p) && !pile.isEmpty(p)) return;
+  const fromEmpty = pile.isEmpty(p);
+  const ghost = fromEmpty ? null : motion.capture();
   setPile(deckId, pile.back(p));
   showCurrent();
+  motion.play(fromEmpty ? 'return' : 'back', ghost);
+  tick();
 });
 
 const notThisOne = guarded(() => {
   const p = state.piles[deckId];
   if (!pile.canSkip(p)) return;
+  const ghost = motion.capture();
   setPile(deckId, pile.skip(p));
   showCurrent();
+  motion.play('skip', ghost);
+  tick();
 });
 
 $('#next').addEventListener('click', goNext);
@@ -293,14 +347,16 @@ $('#back').addEventListener('click', goBack);
 $('#empty-back').addEventListener('click', goBack);
 $('#skip').addEventListener('click', notThisOne);
 
-$('#turn').addEventListener('click', () => {
-  const turned = $('#card-area').classList.toggle('turned');
-  $('#turn').setAttribute('aria-pressed', String(turned));
-});
+$('#turn').addEventListener('click', () => motion.spin(() => {
+  setTurns(turns + 1);
+  scrollToStart();
+}));
 
 $('#shuffle-again').addEventListener('click', guarded(() => {
   setPile(deckId, pile.begin(pile.newPile(deckIds(deckId))));
   showCurrent();
+  motion.play('deal');
+  tick();
 }));
 
 for (const btn of $$('[data-close]')) btn.addEventListener('click', goLid);
@@ -322,6 +378,12 @@ for (const r of $$('input[name="theme"]')) {
     applyTheme(state.theme);
   });
 }
+
+$('#haptics').addEventListener('change', (e) => {
+  state.haptics = e.target.checked;
+  persist();
+  tick();
+});
 
 $('#relock').addEventListener('click', () => {
   forget(KEY_KEY);
@@ -365,10 +427,12 @@ function start(data) {
     for (const c of d.cards) cardsById[c.id] = c;
   }
   const stored = load(STATE_KEY) ?? {};
-  state = { theme: stored.theme === 'light' ? 'light' : 'dark', piles: {} };
+  state = { theme: stored.theme === 'light' ? 'light' : 'dark', haptics: stored.haptics !== false, piles: {} };
   for (const id of Object.keys(decks)) state.piles[id] = pile.repair(stored.piles?.[id], deckIds(id));
   persist();
   applyTheme(state.theme);
+  $('#feel').hidden = !canTick;
+  $('#haptics').checked = state.haptics;
   navigator.storage?.persist?.().catch(() => {});
   showLid();
 }

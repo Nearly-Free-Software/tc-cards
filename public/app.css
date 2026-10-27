@@ -1,4 +1,5 @@
-/* Candle (dark) is the default: dim tables, no pure white, no blue. */
+/* Candle (dark) is the default: dim tables, no pure white, no blue.
+   The page is a patch of table; questions are printed on cards of dark stock lying on it. */
 :root,
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -12,21 +13,53 @@
   --primary-bg: #3a2d20;
   --primary-fg: #f6ead8;
   --focus: #e3b36b;
+
+  --table-lit: #221a13;
+  --table-edge: #100c09;
+  --stock: #2b2119;
+  --rim: rgb(255 236 210 / 0.08);
+  --lip: #1a140f;
+  --edge: #3d3026;
+  --shadow: 0 0 0;
+  --shadow-a: 0.55;
+  --back-ss: #2c2017;
+  --back-gd: #311b1a;
+  --grain-card: 0.9;
+  --btn-press: #241d16;
+  --primary-press: #30251a;
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f5efe4;
+  --bg: #e7ddcc;
   --fg: #1e1913;
   --muted: #65584a;
-  --line: #ddd1bf;
+  --line: #cbbca6;
   --surface: #ede5d7;
   --btn: #ebe2d3;
   --btn-line: #cbbca6;
   --primary-bg: #1e1913;
   --primary-fg: #f5efe4;
   --focus: #8a5a1c;
+
+  --table-lit: #efe6d7;
+  --table-edge: #d8ccb8;
+  --stock: #fbf7ef;
+  --rim: rgb(255 255 255 / 0.7);
+  --lip: #d9cdb9;
+  --edge: #e9e0d0;
+  --shadow: 60 40 20;
+  --shadow-a: 0.28;
+  --back-ss: #6b5440;
+  --back-gd: #5a2a27;
+  --grain-card: 0.55;
+  --btn-press: #e0d6c5;
+  --primary-press: #3a3026;
 }
+
+/* Each pile has its own printed back; one rule serves the card screen, the lid and ghosts. */
+[data-tier="ss"] { --back: var(--back-ss); --back-art: url(paper/back-ss.svg); --pile-tilt: -1deg; }
+[data-tier="gd"] { --back: var(--back-gd); --back-art: url(paper/back-gd.svg); --pile-tilt: 0.8deg; }
 
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -46,11 +79,15 @@ html {
   html { font: -apple-system-body; }
 }
 
+/* A still pool of light on the table; the grain hides any banding in the gradient. */
 body {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--bg);
+  background:
+    url(paper/grain-table.png) 0 0 / 64px 64px,
+    radial-gradient(120% 70% at 50% 42%, var(--table-lit), var(--bg) 55%, var(--table-edge)),
+    var(--bg);
   color: var(--fg);
   line-height: 1.45;
   -webkit-tap-highlight-color: transparent;
@@ -141,6 +178,17 @@ a { color: inherit; text-underline-offset: 0.15em; }
 }
 .icon-btn:disabled { opacity: 0.3; cursor: default; }
 
+/* Buttons give a little under the thumb. Only transform animates, so theme switches stay instant. */
+.btn, .icon-btn { transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.btn:active:not(:disabled), .icon-btn:active:not(:disabled) { transform: translateY(1px) scale(0.98); transition-duration: 40ms; }
+.btn:active:not(:disabled) { background: var(--btn-press); }
+.btn.primary:active:not(:disabled) { background: var(--primary-press); }
+.btn.quiet:active:not(:disabled), .icon-btn:active:not(:disabled) { background: var(--btn); }
+.link:active { opacity: 0.7; }
+/* While the tap guard is up, guarded buttons don't press: the hand learns the tap didn't count. */
+[data-guard] :is(#next, #shuffle-again):active:not(:disabled) { transform: none; background: var(--primary-bg); }
+[data-guard] :is(#skip, #back, #empty-back):active:not(:disabled) { transform: none; background: transparent; }
+
 /* ---------------------------------------------------------------- unlock */
 
 .unlock { display: flex; flex-direction: column; gap: 0.75rem; width: min(100%, 20rem); text-align: left; }
@@ -155,32 +203,83 @@ a { color: inherit; text-underline-offset: 0.15em; }
 }
 .msg { min-height: 1.5em; margin: 0; color: var(--muted); text-align: center; }
 
+/* ---------------------------------------------------------------- pile edges (card screen and lid) */
+
+/* Four card-sized rectangles under the top card, bottom to top; only a sliver of each shows.
+   Rest jitter uses the individual translate/rotate properties so animations compose on top. */
+.stack { position: absolute; inset: 0 0 14px; }
+.stack > span {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r, 16px);
+  background: var(--back);
+  border-bottom: 1px solid var(--edge);
+  box-shadow: 0 2px 3px rgb(var(--shadow) / calc(var(--shadow-a) * 0.6));
+  transition: opacity 200ms ease-out 120ms; /* an edge drops away as the next card lifts */
+}
+.stack > span:nth-child(1) { translate: 0 12px; rotate: 0.5deg; }
+.stack > span:nth-child(2) { translate: -1px 9px; rotate: -0.2deg; }
+.stack > span:nth-child(3) { translate: 1px 6px; rotate: 0.3deg; }
+.stack > span:nth-child(4) { translate: 0 3px; rotate: -0.4deg; background: var(--back-art) center / cover no-repeat, var(--back); }
+[data-depth="3"] .stack > span:nth-child(-n+1),
+[data-depth="2"] .stack > span:nth-child(-n+2),
+[data-depth="1"] .stack > span:nth-child(-n+3),
+[data-depth="0"] .stack > span { opacity: 0; }
+
 /* ---------------------------------------------------------------- lid */
 
-.lid-head { text-align: center; padding: 6vh 0 2rem; }
-.piles { display: grid; gap: 1.25rem; }
+.lid-head { text-align: center; padding: 3vh 0 1.5rem; }
+.piles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .pile { display: flex; flex-direction: column; align-items: center; }
 .pile-btn {
   width: 100%;
-  min-height: 7.5rem;
-  border-radius: 20px;
-  border: 1px solid var(--btn-line);
-  background: var(--surface);
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  padding: 1rem;
+  gap: 0.5rem;
 }
-.pile-title { font-size: 1.6rem; font-weight: 600; }
+.pile-art { position: relative; display: block; width: min(100%, 11rem); padding-bottom: 14px; --r: 12px; }
+.pile-art .stack > span { transition: none; }
+.pile-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 5 / 7;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--back-art) center / cover no-repeat, var(--back);
+  color: #f2e6d3;
+  rotate: var(--pile-tilt);
+  box-shadow:
+    inset 0 1px 0 rgb(255 236 210 / 0.12),
+    0 1px 2px rgb(var(--shadow) / var(--shadow-a)),
+    0 10px 22px -10px rgb(var(--shadow) / var(--shadow-a));
+  transition: translate 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.pile-btn:active .pile-top { translate: 0 2px; transition-duration: 60ms; }
+.pile-title {
+  position: relative;
+  font-family: ui-serif, "New York", Georgia, "Noto Serif", serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.15;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.5);
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+/* All drawn: just the outline of where the pile was. */
+.pile-btn[data-depth="0"] .pile-top { background: none; box-shadow: none; rotate: 0deg; border: 1.5px dashed var(--btn-line); color: var(--muted); }
+.pile-btn[data-depth="0"] .pile-top::before { content: none; }
+.pile-btn[data-depth="0"] .pile-title { text-shadow: none; }
 .pile-left { color: var(--muted); }
 .nudge { text-align: center; color: var(--muted); font-style: italic; margin: 2rem 0 1rem; }
 .lid-foot { margin-top: auto; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
-
-@media (min-width: 40rem) {
-  .piles { grid-template-columns: 1fr 1fr; }
-}
 
 /* ---------------------------------------------------------------- intro, empty, about */
 
@@ -193,6 +292,9 @@ a { color: inherit; text-underline-offset: 0.15em; }
 .intro-text { font-size: 1.2rem; margin: 0 0 1.25rem; }
 .intro-tip { color: var(--muted); border-left: 3px solid var(--btn-line); padding-left: 0.9rem; margin: 0 0 1.5rem; }
 
+/* The bottom of the box once every card is out. */
+.spot { width: min(40vw, 8rem); aspect-ratio: 5 / 7; margin: 0 auto 1.5rem; border: 1.5px dashed var(--btn-line); border-radius: 12px; }
+
 .controls { display: flex; flex-direction: column; gap: 0.75rem; padding-top: 0.75rem; }
 .secondary { display: flex; gap: 0.75rem; }
 .secondary .btn { flex: 1; }
@@ -204,8 +306,8 @@ a { color: inherit; text-underline-offset: 0.15em; }
 .links { padding-left: 1.2rem; margin: 0; }
 .links li { margin-bottom: 0.5rem; }
 .theme-pick { border: 0; padding: 0; margin: 0; display: flex; gap: 1.5rem; }
-.theme-pick label { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; }
-.theme-pick input { width: 1.25rem; height: 1.25rem; accent-color: var(--focus); }
+.theme-pick label, .feel { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; }
+.theme-pick input, .feel input { width: 1.25rem; height: 1.25rem; accent-color: var(--focus); flex: none; }
 
 /* ---------------------------------------------------------------- the card */
 
@@ -216,37 +318,79 @@ a { color: inherit; text-underline-offset: 0.15em; }
   height: 100dvh;
   min-height: 0;
 }
+/* Only while a card is moving: let it sweep past the card area, never scroll the page, ignore taps. */
+.card-screen.moving { overflow: hidden; overflow: clip; }
+.card-screen.moving .card-area { overflow: visible; }
+.card-screen.moving .card { pointer-events: none; }
 
-/* The card is centred with auto margins rather than align-items: center, so a question
+/* The deck is centred with auto margins rather than align-items: center, so a question
    taller than the area (very large text sizes) scrolls from its top instead of being cut off. */
 .card-area {
+  position: relative;
+  z-index: 1;
+  container-type: size;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0.5rem clamp(0.25rem, 4vw, 2rem);
+  padding: 0.5rem clamp(0.25rem, 2vw, 1rem);
 }
 
+.deck { position: relative; width: min(100%, 24rem); margin-block: auto; padding-bottom: 14px; }
+
+/* #card is the live region and focus target; Turn spins it flat on the table, always clockwise. */
 .card {
-  width: 100%;
-  margin-block: auto;
-  text-align: center;
-  transition: transform 220ms ease;
+  position: relative;
+  border-radius: 16px;
+  transform: rotate(calc(var(--turns, 0) * 180deg));
+  transition: transform 480ms cubic-bezier(0.22, 0.68, 0.3, 1);
 }
 .card:focus { outline: none; }
-.card.enter { animation: fade 180ms ease-out; }
-@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-.card-area.turned .card { transform: rotate(180deg); }
+.card.still { transition: none; }
+
+/* The physical card. Everything visual lives here so a clone (ghost) looks identical. */
+.sheet {
+  position: relative;
+  min-height: min(22rem, 52dvh);
+  min-height: min(calc(100cqh - 14px), calc(min(100cqw, 24rem) * 1.4)); /* a 5:7 card when there's room */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.25rem 1rem;
+  border-radius: 16px;
+  text-align: center;
+  color: var(--fg);
+  background: linear-gradient(to bottom, rgb(255 240 220 / 0.035), transparent 45%), var(--stock);
+  box-shadow:
+    inset 0 1px 0 var(--rim),
+    0 1px 0 var(--lip),
+    0 1px 2px rgb(var(--shadow) / var(--shadow-a)),
+    0 12px 26px -10px rgb(var(--shadow) / var(--shadow-a));
+}
+.face { position: relative; font-family: ui-serif, "New York", "Iowan Old Style", Charter, Georgia, "Noto Serif", serif; }
+.back { position: absolute; inset: 0; border-radius: inherit; opacity: 0; background: var(--back-art) center / cover no-repeat, var(--back); }
+.sheet::before, .back::before, .pile-top::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: url(paper/grain-card.png) 0 0 / 64px 64px;
+  opacity: var(--grain-card);
+}
+/* The shadow spreading underneath as a card lifts to turn over. */
+.lift { position: absolute; inset: 3% 3% 14px; border-radius: 16px; opacity: 0; box-shadow: 0 22px 34px -8px rgb(var(--shadow) / 0.6); }
 
 .card-label { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 1.25rem; }
 
+/* Viewport units (not container units) so a ghost outside the card area sets identically. */
 .card-text p {
-  font-size: clamp(1.75rem, 8vw, 2.75rem);
-  font-size: clamp(1.75rem, min(8vw, 6.5dvh), 2.75rem);
+  font-size: clamp(1.5rem, 8vw, 2.75rem);
+  font-size: clamp(1.5rem, min(8vw, 6.2dvh), 2.75rem);
   font-weight: 500;
-  line-height: 1.25;
+  line-height: 1.22;
   max-width: 14em;
   margin: 0 auto;
   text-wrap: balance;
@@ -265,8 +409,13 @@ a { color: inherit; text-underline-offset: 0.15em; }
   position: relative;
 }
 
+/* Cards that leave the table fly in this layer, above the card area (z 1) but below the toast. */
+.flight { position: absolute; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; pointer-events: none; }
+.sheet.ghost { position: absolute; margin: 0; min-height: 0; z-index: 2; }
+
 .toast {
   position: fixed;
+  z-index: 3;
   left: max(16px, env(safe-area-inset-left));
   right: max(16px, env(safe-area-inset-right));
   bottom: calc(max(16px, env(safe-area-inset-bottom)) + 9rem);
@@ -281,7 +430,7 @@ a { color: inherit; text-underline-offset: 0.15em; }
   text-align: center;
 }
 
-/* A phone propped up sideways: question on the left, buttons on the right. */
+/* A phone propped up sideways: the card on the left, buttons on the right. */
 @media (orientation: landscape) and (max-height: 520px) {
   .card-screen {
     max-width: none;
@@ -294,6 +443,8 @@ a { color: inherit; text-underline-offset: 0.15em; }
   .card-screen .card-area { grid-area: card; }
   .card-screen .controls { grid-area: controls; justify-content: center; padding-top: 0; }
   .card-screen .secondary { flex-direction: column; }
+  .deck { width: 100%; }
+  .sheet { min-height: calc(100cqh - 14px); padding: 0.9rem 1.25rem; }
   .card-label { margin-bottom: 0.6rem; }
   .card-text p { max-width: 20em; }
   .toast { bottom: max(16px, env(safe-area-inset-bottom)); }
@@ -313,7 +464,9 @@ a { color: inherit; text-underline-offset: 0.15em; }
 .confirm p { margin: 0 0 1rem; font-size: 1.1rem; }
 .confirm-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
 
+/* Selectors repeat the originals so these overrides win on specificity. */
 @media (prefers-reduced-motion: reduce) {
-  .card.enter { animation: none; }
-  .card { transition: none; }
+  .card, .stack > span, .btn, .icon-btn, .pile-top { transition: none; }
+  .btn:active:not(:disabled), .icon-btn:active:not(:disabled) { transform: none; }
+  .pile-btn:active .pile-top { translate: none; opacity: 0.85; }
 }

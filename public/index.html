@@ -44,15 +44,21 @@
       </header>
       <div class="piles">
         <div class="pile">
-          <button type="button" class="pile-btn" data-open="ss">
-            <span class="pile-title" data-title="ss">Start Small</span>
+          <button type="button" class="pile-btn" data-open="ss" data-tier="ss" data-depth="4">
+            <span class="pile-art">
+              <span class="stack" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+              <span class="pile-top"><span class="pile-title" data-title="ss">Start Small</span></span>
+            </span>
             <span class="pile-left" data-left="ss"></span>
           </button>
           <button type="button" class="link" data-reshuffle="ss">Reshuffle</button>
         </div>
         <div class="pile">
-          <button type="button" class="pile-btn" data-open="gd">
-            <span class="pile-title" data-title="gd">Go Deeper</span>
+          <button type="button" class="pile-btn" data-open="gd" data-tier="gd" data-depth="4">
+            <span class="pile-art">
+              <span class="stack" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+              <span class="pile-top"><span class="pile-title" data-title="gd">Go Deeper</span></span>
+            </span>
             <span class="pile-left" data-left="gd"></span>
           </button>
           <button type="button" class="link" data-reshuffle="gd">Reshuffle</button>
@@ -88,11 +94,20 @@
         <span id="count" class="count"></span>
       </header>
       <div id="card-area" class="card-area">
-        <article id="card" class="card" tabindex="-1" aria-live="polite" aria-atomic="true">
-          <p id="card-label" class="card-label"></p>
-          <div id="card-text" class="card-text"></div>
-          <p id="card-hint" class="card-hint" hidden></p>
-        </article>
+        <div id="deck" class="deck" data-tier="ss" data-depth="4">
+          <span class="stack" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+          <span class="lift" aria-hidden="true"></span>
+          <article id="card" class="card" tabindex="-1" aria-live="polite" aria-atomic="true">
+            <div id="sheet" class="sheet">
+              <div class="face">
+                <p id="card-label" class="card-label"></p>
+                <div id="card-text" class="card-text"></div>
+                <p id="card-hint" class="card-hint" hidden></p>
+              </div>
+              <span class="back" aria-hidden="true"></span>
+            </div>
+          </article>
+        </div>
       </div>
       <div class="controls">
         <div class="secondary">
@@ -110,6 +125,7 @@
         <button type="button" class="icon-btn" id="empty-back" aria-label="Last card">‹</button>
       </header>
       <div class="intro center">
+        <div class="spot" aria-hidden="true"></div>
         <p class="eyebrow" id="empty-tier"></p>
         <h2 id="empty-heading" class="intro-subtitle" tabindex="-1">You’ve drawn every card</h2>
       </div>
@@ -141,14 +157,17 @@
           <label><input type="radio" name="theme" value="dark"> Dark</label>
           <label><input type="radio" name="theme" value="light"> Light</label>
         </fieldset>
+        <label class="feel" id="feel" hidden><input type="checkbox" id="haptics"> A small tick in your hand when a card moves</label>
 
         <h3>Privacy</h3>
-        <p>Nothing leaves this phone. TC Cards stores only which card numbers you’ve drawn, your theme, and the unlocked key. No accounts, cookies or analytics.</p>
+        <p>Nothing leaves this phone. TC Cards stores only which card numbers you’ve drawn, your theme and tick setting, and the unlocked key. No accounts, cookies or analytics.</p>
         <p><button type="button" class="link" id="relock">Lock this phone again</button></p>
       </div>
     </section>
 
   </main>
+
+  <div id="flight" class="flight" aria-hidden="true" inert></div>
 
   <dialog id="confirm" class="confirm" aria-labelledby="confirm-text">
     <form method="dialog">

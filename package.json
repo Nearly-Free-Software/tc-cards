@@ -8,6 +8,7 @@
   "scripts": {
     "cards": "node scripts/build-cards.mjs",
     "icons": "node scripts/make-icons.mjs",
+    "paper": "node scripts/make-paper.mjs",
     "stamp": "node scripts/stamp-sw.mjs",
     "dev": "node scripts/serve.mjs",
     "test": "node --test \"tests/*.test.mjs\"",
