@@ -2,7 +2,7 @@
 // a new deploy ships a new VERSION, which installs alongside, takes over and deletes the old cache.
 // The two lines below are rewritten by `npm run stamp`; don't edit them by hand.
 // <stamp>
-const VERSION = 'tc-cards-ec4658dd31';
+const VERSION = 'tc-cards-5f827f428a';
 const FILES = ["./","app.css","app.js","cards.enc.json","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","icons/icon.svg","icons/maskable-512.png","index.html","lock.js","manifest.webmanifest","motion.js","paper/back-gd.svg","paper/back-ss.svg","paper/grain-card.png","paper/grain-table.png","pile.js"];
 // </stamp>
 

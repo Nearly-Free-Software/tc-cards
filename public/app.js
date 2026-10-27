@@ -8,7 +8,7 @@ const $$ = (sel) => [...document.querySelectorAll(sel)];
 const STATE_KEY = 'tc:v1';
 const KEY_KEY = 'tc:key';
 const TIP_KEY = 'tc:tip';
-const TAP_GUARD_MS = 600;
+const TAP_GUARD_MS = 900;
 const THEME_COLORS = { dark: '#17120e', light: '#e7ddcc' };
 console.assert(motion.MOTION_MAX < TAP_GUARD_MS, 'card motions must finish inside the tap guard');
 
