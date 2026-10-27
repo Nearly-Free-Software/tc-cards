@@ -9,7 +9,7 @@ const $$ = (sel) => [...document.querySelectorAll(sel)];
 const STATE_KEY = 'tc:v1';
 const KEY_KEY = 'tc:key';
 const TIP_KEY = 'tc:tip';
-const TAP_GUARD_MS = 900;
+const TAP_GUARD_MS = 1100;
 const TURN_QUIET_MS = 1500; // after a Turn the phone is often changing hands: no slides for a moment
 const THEME_COLORS = { dark: '#17120e', light: '#e7ddcc' };
 console.assert(motion.MOTION_MAX < TAP_GUARD_MS, 'card motions must finish inside the tap guard');
