@@ -11,3 +11,5 @@ node_modules/
 .claude/settings.local.json
 public.live/
 .DS_Store
+.vercel
+.env*
