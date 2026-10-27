@@ -10,9 +10,9 @@ const STATE_KEY = 'tc:v1';
 const KEY_KEY = 'tc:key';
 const TIP_KEY = 'tc:tip';
 const THEME_KEY = 'tc:theme'; // set only by a pick in About; the theme once saved in tc:v1 is ignored, so every phone turned light once
+const THEME_COLORS = { dark: '#17120e', light: '#e7ddcc' }; // theme.js repeats the key and the dark colour
 const TAP_GUARD_MS = 1200;
 const TURN_QUIET_MS = 1500; // after a Turn the phone is often changing hands: no slides for a moment
-const THEME_COLORS = { dark: '#17120e', light: '#e7ddcc' };
 console.assert(motion.MOTION_MAX < TAP_GUARD_MS, 'card motions must finish inside the tap guard');
 
 // iOS only applies :active (the button press) when the page listens for touches.
@@ -84,6 +84,7 @@ window.addEventListener('popstate', () => {
 
 // ---------------------------------------------------------------- theme
 
+// theme.js has already set the saved theme before the first frame; this also keeps the About radios in step.
 function applyTheme(theme) {
   const t = theme === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = t;
