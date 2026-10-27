@@ -1,6 +1,5 @@
-/* Candle (dark) is the default: dim tables, no pure white, no blue.
+/* Candle (dark), for dim tables: no pure white, no blue.
    The page is a patch of table; questions are printed on cards of dark stock lying on it. */
-:root,
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #17120e;
@@ -29,6 +28,8 @@
   --primary-press: #30251a;
 }
 
+/* Linen (light) is the default. */
+:root,
 :root[data-theme="light"] {
   color-scheme: light;
   --bg: #e7ddcc;

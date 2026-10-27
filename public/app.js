@@ -9,7 +9,8 @@ const $$ = (sel) => [...document.querySelectorAll(sel)];
 const STATE_KEY = 'tc:v1';
 const KEY_KEY = 'tc:key';
 const TIP_KEY = 'tc:tip';
-const TAP_GUARD_MS = 1100;
+const THEME_KEY = 'tc:theme'; // set only by a pick in About; the theme once saved in tc:v1 is ignored, so every phone turned light once
+const TAP_GUARD_MS = 1200;
 const TURN_QUIET_MS = 1500; // after a Turn the phone is often changing hands: no slides for a moment
 const THEME_COLORS = { dark: '#17120e', light: '#e7ddcc' };
 console.assert(motion.MOTION_MAX < TAP_GUARD_MS, 'card motions must finish inside the tap guard');
@@ -34,7 +35,7 @@ function forget(key) {
 let envelope = null;
 let decks = {};          // id -> { id, title, subtitle, intro, tip, cards }
 let cardsById = {};      // card id -> card
-let state = { theme: 'dark', haptics: true, piles: {} };
+let state = { haptics: true, piles: {} };
 let deckId = null;       // pile currently open
 let guardUntil = 0;
 let guardTimer = 0;
@@ -84,7 +85,7 @@ window.addEventListener('popstate', () => {
 // ---------------------------------------------------------------- theme
 
 function applyTheme(theme) {
-  const t = theme === 'light' ? 'light' : 'dark';
+  const t = theme === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = t;
   $('meta[name="theme-color"]').setAttribute('content', THEME_COLORS[t]);
   for (const r of $$('input[name="theme"]')) r.checked = r.value === t;
@@ -389,9 +390,8 @@ document.addEventListener('keydown', (e) => {
 
 for (const r of $$('input[name="theme"]')) {
   r.addEventListener('change', () => {
-    state.theme = r.value;
-    persist();
-    applyTheme(state.theme);
+    save(THEME_KEY, r.value);
+    applyTheme(r.value);
   });
 }
 
@@ -443,10 +443,9 @@ function start(data) {
     for (const c of d.cards) cardsById[c.id] = c;
   }
   const stored = load(STATE_KEY) ?? {};
-  state = { theme: stored.theme === 'light' ? 'light' : 'dark', haptics: stored.haptics !== false, piles: {} };
+  state = { haptics: stored.haptics !== false, piles: {} };
   for (const id of Object.keys(decks)) state.piles[id] = pile.repair(stored.piles?.[id], deckIds(id));
   persist();
-  applyTheme(state.theme);
   $('#feel').hidden = !canTick;
   $('#haptics').checked = state.haptics;
   navigator.storage?.persist?.().catch(() => {});
@@ -454,7 +453,7 @@ function start(data) {
 }
 
 async function boot() {
-  applyTheme(load(STATE_KEY)?.theme);
+  applyTheme(load(THEME_KEY));
   registerServiceWorker();
   try {
     const res = await fetch('cards.enc.json');

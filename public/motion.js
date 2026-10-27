@@ -16,10 +16,10 @@ import {
   REST_POSE, SPIN_MAX, THROW_MAX, drawAngle, endAngle, pivot, place, pose, softY, spinCurve, throwCurve, twistPose,
 } from './swipe.js';
 
-export const MOTION_MAX = 1040;
+export const MOTION_MAX = 1160;
 
 // The pace of a hand at the table: unhurried, about as long as turning over a real card.
-const FLIP = 780;  // lift the top card, turn it over, set it down
+const FLIP = 900;  // lift the top card, turn it over, set it down
 const EDGE = 0.5;  // the moment in a flip when the card is edge-on and its face starts to show
 const FLIP_THROWN = 120; // after a throw the hand is already at the pile
 console.assert(Math.max(THROW_MAX, FLIP_THROWN + FLIP) <= MOTION_MAX, 'a thrown draw must end within MOTION_MAX');
