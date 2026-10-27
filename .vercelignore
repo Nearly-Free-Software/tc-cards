@@ -1,0 +1,11 @@
+/local
+/scripts
+/tests
+/takedown
+/public.live
+/PLAN.md
+/README.md
+/.claude
+/.git
+/node_modules
+.DS_Store

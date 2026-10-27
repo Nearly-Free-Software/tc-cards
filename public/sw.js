@@ -1,0 +1,34 @@
+// Offline cache for Linger. Everything is pre-cached at install and served cache-first;
+// a new deploy ships a new VERSION, which installs alongside, takes over and deletes the old cache.
+// The two lines below are rewritten by `npm run stamp`; don't edit them by hand.
+// <stamp>
+const VERSION = 'linger-c5a2239b0a';
+const FILES = ["./","app.css","app.js","cards.enc.json","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","icons/icon.svg","icons/maskable-512.png","index.html","lock.js","manifest.webmanifest","pile.js"];
+// </stamp>
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(VERSION)
+      .then((cache) => cache.addAll(FILES.map((f) => new Request(f, { cache: 'reload' }))))
+      .then(() => self.skipWaiting()),
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('linger-') && k !== VERSION).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim()),
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+  event.respondWith((async () => {
+    const cache = await caches.open(VERSION);
+    const hit = await cache.match(request, { ignoreSearch: true })
+      ?? (request.mode === 'navigate' ? await cache.match('./') : undefined);
+    return hit ?? fetch(request);
+  })());
+});

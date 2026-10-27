@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#17120e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Linger">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Linger</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="app.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <main id="app">
+
+    <section id="screen-loading" class="screen center">
+      <p class="wordmark">Linger</p>
+      <p id="loading-msg" class="muted" role="status">Opening the box…</p>
+    </section>
+
+    <section id="screen-unlock" class="screen center" hidden>
+      <h1 class="wordmark">Linger</h1>
+      <form id="unlock-form" class="unlock" autocomplete="off">
+        <label for="word">Table word</label>
+        <input id="word" name="word" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required>
+        <button id="unlock-btn" type="submit" class="btn primary">Unlock</button>
+        <p id="unlock-msg" class="msg" role="status" aria-live="polite"></p>
+      </form>
+      <p class="fine">Ask whoever invited you for the table word.</p>
+    </section>
+
+    <section id="screen-lid" class="screen" hidden>
+      <header class="lid-head">
+        <h1 class="wordmark">Linger</h1>
+        <p class="muted">An unofficial companion for the table</p>
+      </header>
+      <div class="piles">
+        <div class="pile">
+          <button type="button" class="pile-btn" data-open="ss">
+            <span class="pile-title" data-title="ss">Start Small</span>
+            <span class="pile-left" data-left="ss"></span>
+          </button>
+          <button type="button" class="link" data-reshuffle="ss">Reshuffle</button>
+        </div>
+        <div class="pile">
+          <button type="button" class="pile-btn" data-open="gd">
+            <span class="pile-title" data-title="gd">Go Deeper</span>
+            <span class="pile-left" data-left="gd"></span>
+          </button>
+          <button type="button" class="link" data-reshuffle="gd">Reshuffle</button>
+        </div>
+      </div>
+      <p class="nudge">Read the question, then put the phone down.</p>
+      <footer class="lid-foot">
+        <p class="fine">Questions from <a href="https://www.practicingtheway.org/tableconversations" target="_blank" rel="noopener noreferrer">Table Conversations</a> by Practicing the Way, word for word. Not affiliated with or endorsed by them.</p>
+        <button type="button" class="link" id="open-about">About &amp; install</button>
+      </footer>
+    </section>
+
+    <section id="screen-intro" class="screen" hidden>
+      <header class="bar">
+        <button type="button" class="icon-btn" data-close aria-label="Back to the box">✕</button>
+      </header>
+      <div class="intro">
+        <p class="eyebrow" id="intro-tier"></p>
+        <h2 id="intro-subtitle" class="intro-subtitle"></h2>
+        <p id="intro-text" class="intro-text"></p>
+        <p id="intro-tip" class="intro-tip"></p>
+        <p class="fine">From Table Conversations by Practicing the Way.</p>
+      </div>
+      <div class="controls">
+        <button type="button" id="begin" class="btn primary big">Begin</button>
+      </div>
+    </section>
+
+    <section id="screen-card" class="screen card-screen" hidden>
+      <header class="bar">
+        <button type="button" class="icon-btn" data-close aria-label="Back to the box">✕</button>
+        <button type="button" class="icon-btn" id="back" aria-label="Previous card">‹</button>
+        <span id="count" class="count"></span>
+      </header>
+      <div id="card-area" class="card-area">
+        <article id="card" class="card" aria-live="polite" aria-atomic="true">
+          <p id="card-label" class="card-label"></p>
+          <div id="card-text" class="card-text"></div>
+          <p id="card-hint" class="card-hint" hidden></p>
+        </article>
+      </div>
+      <div class="controls">
+        <div class="secondary">
+          <button type="button" class="btn quiet" id="skip">Not this one</button>
+          <button type="button" class="btn quiet" id="turn" aria-pressed="false">Turn</button>
+        </div>
+        <button type="button" id="next" class="btn primary big">Next card</button>
+      </div>
+      <p id="toast" class="toast" role="status" hidden></p>
+    </section>
+
+    <section id="screen-empty" class="screen" hidden>
+      <header class="bar">
+        <button type="button" class="icon-btn" data-close aria-label="Back to the box">✕</button>
+        <button type="button" class="icon-btn" id="empty-back" aria-label="Last card">‹</button>
+      </header>
+      <div class="intro center">
+        <p class="eyebrow" id="empty-tier"></p>
+        <h2 class="intro-subtitle">You’ve drawn every card</h2>
+      </div>
+      <div class="controls">
+        <button type="button" id="shuffle-again" class="btn primary big">Shuffle the deck</button>
+      </div>
+    </section>
+
+    <section id="screen-about" class="screen" hidden>
+      <header class="bar">
+        <button type="button" class="icon-btn" data-close aria-label="Back to the box">✕</button>
+      </header>
+      <div class="about">
+        <h2>About Linger</h2>
+        <p>Linger is a small, free, unofficial way to carry the <strong>Table Conversations</strong> questions for evenings when the box isn’t with you. The questions are by <strong>Practicing the Way</strong>, shown word for word. Linger is not affiliated with or endorsed by Practicing the Way.</p>
+        <ul class="links">
+          <li><a href="https://www.practicingtheway.org/tableconversations" target="_blank" rel="noopener noreferrer">Table Conversations</a>: the box, restock news and hosting tips</li>
+          <li><a href="https://practicingtheway.s3.us-west-2.amazonaws.com/Practice+Resources/Community-Table-Conversations-Digital-Version.pdf" target="_blank" rel="noopener noreferrer">The free PDF</a> from Practicing the Way</li>
+          <li><a href="https://www.practicingtheway.org/community" target="_blank" rel="noopener noreferrer">The Community Practice</a></li>
+        </ul>
+
+        <h3>Put it on your home screen</h3>
+        <p><strong>iPhone:</strong> in Safari, tap Share, then <em>Add to Home Screen</em>. Open it once from the icon while you’re online and unlock it there. After that it works without signal.</p>
+        <p><strong>Android:</strong> in Chrome, tap the ⋮ menu, then <em>Install app</em> (or <em>Add to Home screen</em>).</p>
+
+        <h3>Look</h3>
+        <fieldset class="theme-pick">
+          <legend class="sr-only">Theme</legend>
+          <label><input type="radio" name="theme" value="dark"> Dark</label>
+          <label><input type="radio" name="theme" value="light"> Light</label>
+        </fieldset>
+
+        <h3>Privacy</h3>
+        <p>Nothing leaves this phone. Linger stores only which card numbers you’ve drawn, your theme, and the unlocked key. No accounts, cookies or analytics.</p>
+        <p><button type="button" class="link" id="relock">Lock this phone again</button></p>
+      </div>
+    </section>
+
+  </main>
+
+  <dialog id="confirm" class="confirm">
+    <form method="dialog">
+      <p id="confirm-text"></p>
+      <div class="confirm-actions">
+        <button value="cancel" class="btn quiet">Cancel</button>
+        <button value="ok" class="btn primary">Reshuffle</button>
+      </div>
+    </form>
+  </dialog>
+
+  <noscript><p class="screen center">Linger needs JavaScript turned on.</p></noscript>
+</body>
+</html>

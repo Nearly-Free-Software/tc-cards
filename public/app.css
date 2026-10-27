@@ -1,0 +1,311 @@
+/* Candle (dark) is the default: dim tables, no pure white, no blue. */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #17120e;
+  --fg: #f2e6d3;
+  --muted: #b3a28a;
+  --line: #3b3027;
+  --surface: #211a14;
+  --btn: #2c231b;
+  --btn-line: #5a4734;
+  --primary-bg: #3a2d20;
+  --primary-fg: #f6ead8;
+  --focus: #e3b36b;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5efe4;
+  --fg: #1e1913;
+  --muted: #65584a;
+  --line: #ddd1bf;
+  --surface: #ede5d7;
+  --btn: #ebe2d3;
+  --btn-line: #cbbca6;
+  --primary-bg: #1e1913;
+  --primary-fg: #f5efe4;
+  --focus: #8a5a1c;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  background: var(--bg);
+}
+
+/* iOS only (touch-callout is iOS-only): follow the Larger Text setting, even in the installed app. */
+@supports (font: -apple-system-body) and (-webkit-touch-callout: none) {
+  html { font: -apple-system-body; }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+/* Light theme in the installed iPhone app: the status bar text is white, so give it a dark band. */
+:root[data-theme="light"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: env(safe-area-inset-top, 0px);
+  background: #1e1913;
+  z-index: 10;
+}
+
+button, input { font: inherit; color: inherit; }
+button { touch-action: manipulation; cursor: pointer; }
+a { color: inherit; text-underline-offset: 0.15em; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------------------------------------------------------------- screens */
+
+.screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding:
+    max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  max-width: 44rem;
+  margin: 0 auto;
+}
+.screen.center { justify-content: center; align-items: center; text-align: center; gap: 1rem; }
+
+.wordmark {
+  font-family: ui-serif, "New York", Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 2.6rem;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.muted { color: var(--muted); margin: 0; }
+.fine { color: var(--muted); font-size: 0.85rem; margin: 0; }
+.eyebrow { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 0.5rem; }
+
+/* ---------------------------------------------------------------- buttons */
+
+.btn {
+  min-height: 48px;
+  padding: 0.6rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid var(--btn-line);
+  background: var(--btn);
+  font-weight: 600;
+}
+.btn.primary { background: var(--primary-bg); color: var(--primary-fg); border-color: var(--btn-line); }
+.btn.big { min-height: 56px; width: 100%; font-size: 1.15rem; }
+.btn.quiet { background: transparent; border-color: var(--line); color: var(--muted); font-weight: 500; }
+.btn:disabled { opacity: 0.4; cursor: default; }
+
+.link {
+  background: none;
+  border: 0;
+  padding: 0.6rem 0.4rem;
+  min-height: 44px;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.icon-btn {
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--muted);
+}
+.icon-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* ---------------------------------------------------------------- unlock */
+
+.unlock { display: flex; flex-direction: column; gap: 0.75rem; width: min(100%, 20rem); text-align: left; }
+.unlock label { color: var(--muted); }
+.unlock input {
+  min-height: 52px;
+  padding: 0.6rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--btn-line);
+  background: var(--surface);
+  font-size: 1.15rem;
+}
+.msg { min-height: 1.5em; margin: 0; color: var(--muted); text-align: center; }
+
+/* ---------------------------------------------------------------- lid */
+
+.lid-head { text-align: center; padding: 6vh 0 2rem; }
+.piles { display: grid; gap: 1.25rem; }
+.pile { display: flex; flex-direction: column; align-items: center; }
+.pile-btn {
+  width: 100%;
+  min-height: 7.5rem;
+  border-radius: 20px;
+  border: 1px solid var(--btn-line);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 1rem;
+}
+.pile-title { font-size: 1.6rem; font-weight: 600; }
+.pile-left { color: var(--muted); }
+.nudge { text-align: center; color: var(--muted); font-style: italic; margin: 2rem 0 1rem; }
+.lid-foot { margin-top: auto; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+
+@media (min-width: 40rem) {
+  .piles { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---------------------------------------------------------------- intro, empty, about */
+
+.bar { display: flex; align-items: center; gap: 0.25rem; min-height: 48px; }
+.count { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; padding-right: 0.5rem; }
+
+.intro { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 1rem 0.5rem; }
+.intro.center { align-items: center; text-align: center; }
+.intro-subtitle { font-size: 2rem; line-height: 1.2; font-weight: 600; margin: 0 0 1rem; }
+.intro-text { font-size: 1.2rem; margin: 0 0 1.25rem; }
+.intro-tip { color: var(--muted); border-left: 3px solid var(--btn-line); padding-left: 0.9rem; margin: 0 0 1.5rem; }
+
+.controls { display: flex; flex-direction: column; gap: 0.75rem; padding-top: 0.75rem; }
+.secondary { display: flex; gap: 0.75rem; }
+.secondary .btn { flex: 1; }
+
+.about { padding: 0 0.25rem 2rem; }
+.about h2 { font-size: 1.6rem; margin: 0.5rem 0 1rem; }
+.about h3 { font-size: 1.05rem; margin: 1.75rem 0 0.5rem; }
+.about p { margin: 0 0 0.75rem; }
+.links { padding-left: 1.2rem; margin: 0; }
+.links li { margin-bottom: 0.5rem; }
+.theme-pick { border: 0; padding: 0; margin: 0; display: flex; gap: 1.5rem; }
+.theme-pick label { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; }
+.theme-pick input { width: 1.25rem; height: 1.25rem; accent-color: var(--focus); }
+
+/* ---------------------------------------------------------------- the card */
+
+.card-screen {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+}
+
+.card-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.5rem clamp(0.25rem, 4vw, 2rem);
+}
+
+.card {
+  width: 100%;
+  text-align: center;
+  transition: transform 220ms ease;
+}
+.card.enter { animation: fade 180ms ease-out; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.card-area.turned .card { transform: rotate(180deg); }
+
+.card-label { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 1.25rem; }
+
+.card-text p {
+  font-size: clamp(1.75rem, 8vw, 2.75rem);
+  font-size: clamp(1.75rem, min(8vw, 6.5dvh), 2.75rem);
+  font-weight: 500;
+  line-height: 1.25;
+  max-width: 14em;
+  margin: 0 auto;
+  text-wrap: balance;
+}
+.card-text p + p { margin-top: 0.8em; }
+
+.card-hint { color: var(--muted); font-style: italic; font-size: 1.15rem; margin: 1.25rem 0 0; }
+
+.blank {
+  display: inline-block;
+  width: 3.5em;
+  border-bottom: 0.07em solid currentColor;
+  margin: 0 0.12em;
+  position: relative;
+}
+
+.toast {
+  position: fixed;
+  left: max(16px, env(safe-area-inset-left));
+  right: max(16px, env(safe-area-inset-right));
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 9rem);
+  margin: 0 auto;
+  max-width: 26rem;
+  padding: 0.8rem 1rem;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--btn-line);
+  color: var(--fg);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+/* A phone propped up sideways: question on the left, buttons on the right. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .card-screen {
+    max-width: none;
+    grid-template-columns: 1fr minmax(12rem, 30%);
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "bar bar" "card controls";
+    column-gap: 1rem;
+  }
+  .card-screen .bar { grid-area: bar; }
+  .card-screen .card-area { grid-area: card; }
+  .card-screen .controls { grid-area: controls; justify-content: center; padding-top: 0; }
+  .card-screen .secondary { flex-direction: column; }
+  .card-label { margin-bottom: 0.6rem; }
+  .card-text p { max-width: 20em; }
+  .toast { bottom: max(16px, env(safe-area-inset-bottom)); }
+}
+
+/* ---------------------------------------------------------------- dialog */
+
+.confirm {
+  border: 1px solid var(--btn-line);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--fg);
+  padding: 1.25rem;
+  width: min(22rem, calc(100vw - 32px));
+}
+.confirm::backdrop { background: rgb(0 0 0 / 0.55); }
+.confirm p { margin: 0 0 1rem; font-size: 1.1rem; }
+.confirm-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+@media (prefers-reduced-motion: reduce) {
+  .card.enter { animation: none; }
+  .card { transition: none; }
+}

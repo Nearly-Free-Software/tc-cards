@@ -1,0 +1,13 @@
+# Never commit Practicing the Way content: PDFs, the plaintext deck, the table word,
+# or the encrypted deck (a public ciphertext can be attacked offline).
+local/
+public/cards.enc.json
+
+# Planning notes stay local
+PLAN.md
+
+node_modules/
+.vercel/
+.claude/settings.local.json
+public.live/
+.DS_Store
